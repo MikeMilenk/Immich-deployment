@@ -32,7 +32,7 @@ PVE → Disks → ZFS
 
 Click **Create: ZFS**.
 
-I named it **immich-zfs** for easier tracking in the future. Select the drives you want to combine. Leave all other settings at their default values. Click **Create** and wait for Proxmox to finish creating the pool.
+I named it **`immich-zfs`** for easier tracking in the future. Select the drives you want to combine. Leave all other settings at their default values. Click **Create** and wait for Proxmox to finish creating the pool.
 
 ![Create the ZFS Storage Pool](https://github.com/MikeMilenk/Immich-deployment/blob/83dcf0bc14420e3a2638382538ff980df59454ee/images/immich-zfs.png)
 
@@ -51,7 +51,7 @@ Click **Add**.
 
 Click **Add → ZFS**.
 
-I set the **ID** to `immich`. For **ZFS Pool**, select the pool created in the previous step. In my case it's **immich-zfs**. For **Content**, select **Disk Image**. Immich runs inside a VM, and virtual machines require block storage for their virtual disks. **Container** content type is intended for different purposes and isn't necessary for an Immich VM.
+I set the **ID** to `immich`. For **ZFS Pool**, select the pool created in the previous step. In my case it's **`immich-zfs`**. For **Content**, select **`Disk Image`**. Immich runs inside a VM, and virtual machines require block storage for their virtual disks. **`Container`** content type is intended for different purposes and isn't necessary for an Immich VM.
 
 ![Add the Pool as Proxmox Storage](https://github.com/MikeMilenk/Immich-deployment/blob/83dcf0bc14420e3a2638382538ff980df59454ee/images/immich%20disk.png)
 
@@ -59,7 +59,7 @@ I set the **ID** to `immich`. For **ZFS Pool**, select the pool created in the p
 
 ### 3. Verify the Configuration
 
-After saving, **immich-zfs** will appear in the Storage list and can now be selected when creating VMs, containers, or storing apps data. You can verify that it was created successfully by checking its status from the Proxmox terminal:
+After saving, **`immich-zfs`** will appear in the Storage list and can now be selected when creating VMs, containers, or storing apps data. You can verify that it was created successfully by checking its status from the Proxmox terminal:
 
 ```bash
 zpool status immich-zfs
