@@ -69,5 +69,5 @@ If the pool was created correctly, the output should display the pool name, its 
 
 At this point, the SSD continues hosting Proxmox VE and will host future Linux server (where Immich Cloud will be deployed), while your Immich data will be stored on the new **immich-zfs** pool.
 
-
+![zfs pool status](https://github.com/MikeMilenk/Immich-deployment/blob/a019a2622f9d1d1bba4b72f1c2fdc4939d3fa81c/images/zfs%20pool%20status.png)
 
