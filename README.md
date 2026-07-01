@@ -14,7 +14,7 @@ In short, Immich gives you the convenience of a modern cloud photo service while
 
 # Preparing Storage for Immich Media
 
-My server contains 2 SSDs and 2 HDDs. The SSD is used only for Proxmox VE and Linux ISO images, while the two HDDs are combined into a single **1.5 TB** ZFS storage pool called **`immich-zfs`**. This keeps the OS separate from the photo library and provides one large location for all app data.
+My server contains 2 SSDs and 2 HDDs. The SSD is used only for Proxmox VE and Linux ISO images, while the two HDDs are combined into a single **1.5 TB** ZFS storage pool called **`immich-zfs`**. This keeps the OS separate from the photo library and provides one large location for all app data. On the screenshot below, you can see my disks. In the next steps, I will combine these HDDs for Immich.
 
 ![Server Drives](https://github.com/MikeMilenk/Immich-deployment/blob/83dcf0bc14420e3a2638382538ff980df59454ee/images/lsblk.png)
 
