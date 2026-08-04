@@ -1,6 +1,8 @@
 # Build Your Own Media Cloud with Immich
 
-In this guide, I'll show you how to build your own private photo and video cloud using **Immich**, similar to **iCloud Photos** or **Google Photos**. You need first [deploy an Ubuntu Server VM on **Proxmox VE**](https://github.com/MikeMilenk/Deploying-Linux-Server.git), then install Immich and configure it to store all photos on a dedicated storage pool.
+> In this guide, I'll show you how to build your own private photo and video cloud using **Immich**, similar to **iCloud Photos** or **Google Photos**. Here is the **[official Immich deployment guide](https://docs.immich.app/overview/quick-start)**. My guide provides a more detailed setup with additional configuration for Proxmox, ZFS storage, dedicated HDD storage, Ubuntu Server, and Tailscale remote access.
+
+You need first [deploy an Ubuntu Server VM on **Proxmox VE**](https://github.com/MikeMilenk/Deploying-Linux-Server.git), then install Immich and configure it to store all photos on a dedicated storage pool.
 
 **Immich** is a self-hosted photo and video management system running on your own server. It allows you to:
 * automatically back up photos from your phone
@@ -76,7 +78,9 @@ At this point, the SSD continues hosting Proxmox VE and will host future Linux s
 After creating and configuring the **ZFS pool** in **Proxmox**, we move to our Ubuntu Server VM.
 
 This is where we will install **Docker** and **Immich**. The setup will look like this:
-`Proxmox → ZFS Pool → Ubuntu Server VM → Docker → Immich`
+```text
+Proxmox → ZFS Pool → Ubuntu Server VM → Docker → Immich
+```
 
 ---
 
@@ -192,4 +196,70 @@ In my case it's `UPLOAD_LOCATION=/mnt/image_storage/library`
 - **`IMMICH_VERSION`** — leave the default value from the downloaded `.env` file.
 - **`DB_PASSWORD`** — you should change the default *"postgres"* password to a random password.
 - **`DB_USERNAME`** and **`DB_DATABASE_NAME`** can be left unchanged.
+
+---
+
+## 2.3 Start the containers
+From the created directory, where the `docker-compose.yml` and `.env` files are located (`immich-app` in my case), run the following command to start **Immich** in the background:
+
+```bash
+docker compose up -d
+```
+This will start all required Immich containers as background services.
+
+![Start Docker](https://github.com/MikeMilenk/Immich-deployment/blob/9c14ca013e8441521f381e5e7ab2d5ddf2b660bf/images/Docker%20up.png)
+
+---
+
+# 3. Remote Access to Immich
+At this point, you have 2 options for accessing your **Immich server**.
+
+## 3.1 Option 1 — Local Network
+You can access Immich using the local IP address of your Ubuntu Server while connected to your home network.
+
+### 3.1.1 Access Immich via Web Interface
+Simply enter the local IP address of your Ubuntu Server followed by port 2283 in your web browser:
+```text
+http://192.168.x.x:2283
+```
+Click **Getting Started** button. On the first login, Immich will prompt you to create the administrator account.
+
+![Immich Web Interface Initial Admin Registration](https://github.com/MikeMilenk/Immich-deployment/blob/9c14ca013e8441521f381e5e7ab2d5ddf2b660bf/images/WEB%20Initial%20admin%20registration.webp)
+
+### 3.1.2 Access Immich from the Mobile App
+
+Once you have created the administrator account, you can access your Immich server using the official mobile app.
+
+The mobile app can be downloaded from the following places:
+- [Apple App Store](https://apps.apple.com/us/app/immich/id1613945652)
+- [Google Play Store](https://play.google.com/store/apps/details?id=app.alextran.immich)
+- [GitHub Releases (APK)](https://github.com/immich-app/immich/releases)
+- Obtainium: You can get your Obtainium config link from the [Utilities page of your Immich server](https://my.immich.app/utilities).
+- [F-Droid](https://app.futo.org/fdroid/repo/)
+
+When signing in, enter the same **server address** you used in the web browser in the **`Server Endpoint URL`** field:
+
+```text
+http://192.168.x.x:2283
+```
+
+![Immich Mobile App](https://github.com/MikeMilenk/Immich-deployment/blob/9c14ca013e8441521f381e5e7ab2d5ddf2b660bf/images/Mobile%20app%20-%20Initial%20Login.jpg)
+
+Sign in using your Immich account credentials. You can now access your existing photo library from your phone and upload new photos directly from your device.
+
+
+## 3.2 Option 2 — Remote Access via VPN
+If you want to access your **Immich server** from outside your home network, you can use a VPN. For this setup, I use `Tailscale`, a VPN based on WireGuard.
+
+To access Immich remotely, Tailscale needs to be installed and configured on both:
+- the device you want to use to access Immich remotely (such as a phone or computer)
+- the Ubuntu Server running Immich
+
+For instructions on installing Tailscale on Ubuntu Server, follow this guide:
+> **[Install Tailscale on Ubuntu Server](https://github.com/MikeMilenk/Installing-Tailscale-on-Proxmox.git)**
+
+Once both devices are connected to the same Tailscale network, you can access Immich using the Tailscale IP address of your Ubuntu Server:
+```text
+http://100.x.x.x:2283
+```
 
