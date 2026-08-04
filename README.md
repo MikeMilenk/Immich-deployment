@@ -29,7 +29,7 @@ In the Proxmox web interface, select your node (**PVE**) and navigate to the **Z
 PVE → Disks → ZFS
 ```
 
-Click **Create: ZFS**.
+Click `Create: ZFS`.
 
 I named it **`immich-zfs`** for easier tracking in the future. Select the drives you want to combine. Leave all other settings at their default values. Click **Create** and wait for Proxmox to finish creating the pool.
 
@@ -44,13 +44,13 @@ Once the pool has been created, navigate to:
 ```text
 Datacenter → Storage
 ```
-Configure the storage:
+Add the storage: `Add → ZFS`.
 
-> Click **Add**.
-
-> Click **Add → ZFS**.
-
-I set the **ID** to `immich`. For **ZFS Pool**, select the pool created in the previous step. In my case it's **`immich-zfs`**. For **Content**, select **`Disk Image`**. Immich runs inside a VM, and virtual machines require block storage for their virtual disks. **`Container`** content type is intended for different purposes and isn't necessary for an Immich VM.
+- I set the **ID** to **`immich`**.
+- For **ZFS Pool**, select the pool created in the previous step. In my case it's **`immich-zfs`**.
+- For **Content**, select **`Disk Image`**.
+ 
+*`NOTE: Immich runs inside a VM, and virtual machines require block storage for their virtual disks. "Container" content type is intended for different purposes and isn't necessary for an Immich VM.`*
 
 ![Add the Pool as Proxmox Storage](https://github.com/MikeMilenk/Immich-deployment/blob/83dcf0bc14420e3a2638382538ff980df59454ee/images/immich%20disk.png)
 
@@ -93,7 +93,7 @@ In Proxmox, go to:
 > Storage: `immich` — our existing Proxmox ZFS storage backed by the `immich-zfs` pool.
 > Disk size (GiB): `1300`
 
-*`NOTE: I have **1.45 TB** of available storage, which is approximately **1350 GiB**. I will allocate **1300 GiB** and leave approximately **50 GiB** of free space to avoid filling the storage completely and to leave some room for normal ZFS operations and future growth.`*
+*`NOTE: I have 1.45 TB of available storage, which is approximately 1350 GiB. I will allocate 1300 GiB and leave approximately 50 GiB of free space to avoid filling the storage completely and to leave some room for normal ZFS operations and future growth.`*
 
 Click `Add`.
 
@@ -110,7 +110,7 @@ Run `lsblk` to verify that the new disk is detected. In my case, `sda` is the ma
 sudo fdisk /dev/sdb
 ```
 Then select:
-```bash
+```text
 n       ← create new partition
 Enter   ← default partition number
 Enter   ← default first sector
@@ -125,7 +125,7 @@ sudo mkfs.ext4 /dev/sdb1
 This creates an `ext4` filesystem so Ubuntu can store files on it.
 
 ### 2.1.4 Mount the Disk
-In my case, I created and named the new directory `immich-storage` to make it easier to identify and track later.
+In my case, I created and named the new directory **`immich-storage`** to make it easier to identify and track later.
 ```bash
 sudo mkdir -p /mnt/immich-storage
 sudo mount /dev/sdb1 /mnt/immich-storage
@@ -150,11 +150,11 @@ cd ./immich-app
 ### 2.2.2 Download the required files
 Download the `docker-compose.yml` file and the `example.env` template provided by **Immich**. The `example.env` file will be saved as `.env`:
 
-> **Get `docker-compose.yml` file:**
+- **Get `docker-compose.yml` file:**
 ```bash
 wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 ```
-> **Get `example.env` file**
+- **Get `example.env` file**
 ```bash
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
@@ -185,11 +185,11 @@ DB_USERNAME=postgres
 DB_DATABASE_NAME=immich
 ```
 
-> **`UPLOAD_LOCATION`** — set this to the new storage location.
+- **`UPLOAD_LOCATION`** — set this to the new storage location.
 In my case it's `UPLOAD_LOCATION=/mnt/image_storage/library`
-> **`DB_DATA_LOCATION`** — leave the default.
-> **`TZ`** — optional. You can set your timezone by uncommenting the `TZ=` line
-> **`IMMICH_VERSION`** — leave the default value from the downloaded `.env` file.
-> **`DB_PASSWORD`** — you should change the default *"postgres"* password to a random password.
-> **`DB_USERNAME`** and **`DB_DATABASE_NAME`** can be left unchanged.
+- **`DB_DATA_LOCATION`** — leave the default.
+- **`TZ`** — optional. You can set your timezone by uncommenting the `TZ=` line
+- **`IMMICH_VERSION`** — leave the default value from the downloaded `.env` file.
+- **`DB_PASSWORD`** — you should change the default *"postgres"* password to a random password.
+- **`DB_USERNAME`** and **`DB_DATABASE_NAME`** can be left unchanged.
 
