@@ -1,6 +1,6 @@
 # Build Your Own Media Cloud with Immich
 
-In this guide, I'll show you how to build your own private photo and video cloud using **Immich**, similar to **iCloud Photos** or **Google Photos**. You need first [deploy an Ubuntu Server VM on **Proxmox VE**](https://github.com/MikeMilenk/Immich-deployment), then install Immich and configure it to store all photos on a dedicated storage pool.
+In this guide, I'll show you how to build your own private photo and video cloud using **Immich**, similar to **iCloud Photos** or **Google Photos**. You need first [deploy an Ubuntu Server VM on **Proxmox VE**](https://github.com/MikeMilenk/Deploying-Linux-Server.git), then install Immich and configure it to store all photos on a dedicated storage pool.
 
 **Immich** is a self-hosted photo and video management system running on your own server. It allows you to:
 * automatically back up photos from your phone
@@ -20,12 +20,11 @@ My server contains 2 SSDs and 2 HDDs. The SSD is used only for Proxmox VE and Li
 
 ---
 
-# Create the ZFS Storage Pool
+# 1. Create the ZFS Storage Pool
 
-### 1. Open the ZFS Management Page
+## 1.1 Create the ZFS Pool in Proxmox
 
-In the Proxmox web interface, select your node (**PVE**) and navigate to:
-
+In the Proxmox web interface, select your node (**PVE**) and navigate to the **ZFS Management Page**:
 ```text
 PVE → Disks → ZFS
 ```
@@ -38,7 +37,7 @@ I named it **`immich-zfs`** for easier tracking in the future. Select the drives
 
 ---
 
-### 2. Add the Pool as Proxmox Storage
+## 1.2 Add the ZFS Pool as Proxmox Storage
 
 Once the pool has been created, navigate to:
 
@@ -57,9 +56,9 @@ I set the **ID** to `immich`. For **ZFS Pool**, select the pool created in the p
 
 ---
 
-### 3. Verify the Configuration
+## 1.3 Verify the ZFS Pool Configuration
 
-After saving, **`immich-zfs`** will appear in the Storage list and can now be selected when creating VMs, containers, or storing apps data. You can verify that it was created successfully by checking its status from the Proxmox terminal:
+After saving, **`immich`** will appear in the Proxmox Storage list and can be used to store virtual disks for VMs. You can verify that it was created successfully by checking its status from the Proxmox terminal:
 
 ```bash
 zpool status
@@ -71,34 +70,84 @@ At this point, the SSD continues hosting Proxmox VE and will host future Linux s
 
 ![zfs pool status](https://github.com/MikeMilenk/Immich-deployment/blob/b9b092946b3f18329b03df9a5c8b804e5b498ac7/images/zfs%20pools%20status.png)
 
-# Set up the server
+---
+
+# 2. Prepare the Ubuntu Server
 After creating and configuring the **ZFS pool** in **Proxmox**, we move to our Ubuntu Server VM.
 
 This is where we will install **Docker** and **Immich**. The setup will look like this:
 `Proxmox → ZFS Pool → Ubuntu Server VM → Docker → Immich`
 
-### 1. Prepare the combined HDD storage for Immich
-As I indicated previously, I want Immich media to be stored on separate HDDs instead of the SSD where the Ubuntu VM is located. Let's add the HDD storage to the Ubuntu VM. In Proxmox, go to:
+---
+
+## 2.1 Prepare the combined HDD storage for Immich
+As I indicated previously, I want Immich media to be stored on separate HDDs instead of the SSD where the Ubuntu VM is located.
+
+### 2.1.1 Add the combined HDD storage to Ubuntu Server VM
+
+In Proxmox, go to:
 `VM → Hardware → Add → Hard Disk`
-> Bus: `SCSI 1`
+![Adding HDD Storage](https://github.com/MikeMilenk/Immich-deployment/blob/7690750d53db603162fafd5731209bb54c9d61b9/images/Add%20HDD.png)
+
+> Bus: `SCSI: 1`
 > Storage: `immich` — our existing Proxmox ZFS storage backed by the `immich-zfs` pool.
 > Disk size (GiB): `1300`
 
-`*NOTE: I have **1.45 TB** of available storage, which is approximately **1350 GiB**. I will allocate **1300 GiB** and leave approximately **50 GiB** of free space to avoid filling the storage completely and to leave some room for normal ZFS operations and future growth.*`
+*`NOTE: I have **1.45 TB** of available storage, which is approximately **1350 GiB**. I will allocate **1300 GiB** and leave approximately **50 GiB** of free space to avoid filling the storage completely and to leave some room for normal ZFS operations and future growth.`*
 
 Click `Add`.
 
+![Configuring HDD Storage](https://github.com/MikeMilenk/Immich-deployment/blob/7690750d53db603162fafd5731209bb54c9d61b9/images/Add%20HDD%20Storage.png)
+
 This attaches a virtual hard disk backed by our ZFS pool to the Ubuntu VM. The disk will then appear inside Ubuntu and can be partitioned, formatted, and mounted for Immich storage.
 
-### 2.Create the Immich Directory and navigate into it
+Run `lsblk` to verify that the new disk is detected. In my case, `sda` is the main disk containing the Ubuntu system, while `sdb` is the newly added disk with no partitions yet. We will create a partition on `sdb` next.
+
+![detected disks](https://github.com/MikeMilenk/Immich-deployment/blob/93c59fefd70985038fca32a85729ffbc9954c372/images/lsblk.png)
+
+### 2.1.2 Create a Partition
+```bash
+sudo fdisk /dev/sdb
+```
+Then select:
+```bash
+n       ← create new partition
+Enter   ← default partition number
+Enter   ← default first sector
+Enter   ← use all available space
+w       ← write changes
+```
+
+### 2.1.3 Format the Partition
+```bash
+sudo mkfs.ext4 /dev/sdb1
+```
+This creates an `ext4` filesystem so Ubuntu can store files on it.
+
+### 2.1.4 Mount the Disk
+In my case, I created and named the new directory `immich-storage` to make it easier to identify and track later.
+```bash
+sudo mkdir -p /mnt/immich-storage
+sudo mount /dev/sdb1 /mnt/immich-storage
+```
+This makes the disk accessible through `/mnt/immich-storage`.
+
+### 2.1.5 Configure Permanent Mounting
+Add the disk to `/etc/fstab`so Ubuntu automatically mounts it after reboot.
+
+---
+
+## 2.2 Install and Configure Immich
+We need to download and keep the `docker-compose.yml` and `.env` files in the newly created **Immich** directory. In my case, the Immich directory is `immich-app`.
+
+### 2.2.1 Create the Immich Directory and navigate into it
 Create a directory of your choice (I named it as `immich-app`)
 ```bash
 mkdir ./immich-app
 cd ./immich-app
 ```
 
-### 3.Download the required files
-We need to keep the `docker-compose.yml` and `.env` files in the `immich-app` directory.
+### 2.2.2 Download the required files
 Download the `docker-compose.yml` file and the `example.env` template provided by **Immich**. The `example.env` file will be saved as `.env`:
 
 > **Get `docker-compose.yml` file:**
@@ -109,7 +158,7 @@ wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/
 ```bash
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
-### 4.Populate the .env file with custom values
+### 2.2.3 Populate the .env file with custom values
 Default environmental variable content:
 ```bash
 # You can find documentation for all the supported env variables at https://docs.immich.app/install/environment-variables
@@ -135,4 +184,12 @@ DB_PASSWORD=postgres
 DB_USERNAME=postgres
 DB_DATABASE_NAME=immich
 ```
+
+> **`UPLOAD_LOCATION`** — set this to the new storage location.
+In my case it's `UPLOAD_LOCATION=/mnt/image_storage/library`
+> **`DB_DATA_LOCATION`** — leave the default.
+> **`TZ`** — optional. You can set your timezone by uncommenting the `TZ=` line
+> **`IMMICH_VERSION`** — leave the default value from the downloaded `.env` file.
+> **`DB_PASSWORD`** — you should change the default *"postgres"* password to a random password.
+> **`DB_USERNAME`** and **`DB_DATABASE_NAME`** can be left unchanged.
 
