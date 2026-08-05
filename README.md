@@ -14,7 +14,31 @@ You need first [deploy an Ubuntu Server VM on **Proxmox VE**](https://github.com
 
 In short, Immich gives you the convenience of a modern cloud photo service while keeping full control of your data on your own hardware.
 
-# Preparing Storage for Immich Media
+---
+## Table of Contents:
+- **[0. Prepare Storage for Immich Media](#0-prepare-storage-for-immich-media)**
+- **[1. Configure the ZFS Storage Pool](#1-configure-the-zfs-storage-pool)**
+  - [1.1 Create the ZFS Pool in Proxmox](#11-create-the-zfs-pool-in-proxmox)
+  - [1.2 Add the ZFS Pool as Proxmox Storage](#12-add-the-zfs-pool-as-proxmox-storage)
+  - [1.3 Verify the ZFS Pool Configuration](#13-verify-the-zfs-pool-configuration)
+- **[2. Prepare the Ubuntu Server](#2-prepare-the-ubuntu-server)**
+  - [2.1 Prepare the combined HDD storage for Immich](#21-prepare-the-combined-hdd-storage-for-immich)
+    - [2.1.1 Add the combined HDD storage to Ubuntu Server VM](#211-add-the-combined-hdd-storage-to-ubuntu-server-vm)
+    - [2.1.2 Create a Partition](#212-create-a-partition)
+    - [2.1.3 Format the Partition](#213-format-the-partition)
+    - [2.1.4 Mount the Disk](#214-mount-the-disk)
+    - [2.1.5 Configure Permanent Mounting](#215-configure-permanent-mounting)
+  - [2.2 Install and Configure Immich](#22-install-and-configure-immich)
+    - [2.2.1 Create the Immich Directory and navigate into it](#221-create-the-immich-directory-and-navigate-into-it)
+    - [2.2.2 Download the Required Files](#222-download-the-required-files)
+    - [2.2.3 Populate the .env file with Custom Values](#223-populate-the-.env-file-with-custom-values)
+  - [2.3 Start the Containers](#23-start-the-containers)
+- **[3. Remote Access to Immich](#3-remote-access-to-immich)**
+  - [3.1 Option 1 — Local Network](#31-option-1-—-local-network)
+  - [3.2 Option 2 — Remote Access via VPN](#32-option-2-—-remote-access-via-vpn)
+---
+
+# 0. Prepare Storage for Immich Media
 
 My server contains 2 SSDs and 2 HDDs. The SSD is used only for Proxmox VE and Linux ISO images, while the two HDDs will be combined into a single **1.5 TB** ZFS storage pool and will be called as **`immich-zfs`**. This keeps the OS separate from the photo library and provides one large location for all app data. On the screenshot below, you can see my disks. In the next steps, I will combine these HDDs for Immich.
 
@@ -22,7 +46,7 @@ My server contains 2 SSDs and 2 HDDs. The SSD is used only for Proxmox VE and Li
 
 ---
 
-# 1. Create the ZFS Storage Pool
+# 1. Configure the ZFS Storage Pool
 
 ## 1.1 Create the ZFS Pool in Proxmox
 
@@ -170,7 +194,7 @@ mkdir ./immich-app
 cd ./immich-app
 ```
 
-### 2.2.2 Download the required files
+### 2.2.2 Download the Required Files
 Download the `docker-compose.yml` file and the `example.env` template provided by **Immich**. The `example.env` file will be saved as `.env`:
 
 - **Get `docker-compose.yml` file:**
@@ -181,7 +205,7 @@ wget -O docker-compose.yml https://github.com/immich-app/immich/releases/latest/
 ```bash
 wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
-### 2.2.3 Populate the .env file with custom values
+### 2.2.3 Populate the .env file with Custom Values
 Default environmental variable content:
 ```bash
 # You can find documentation for all the supported env variables at https://docs.immich.app/install/environment-variables
@@ -218,7 +242,7 @@ In my case it's `UPLOAD_LOCATION=/mnt/image_storage/library`
 
 ---
 
-## 2.3 Start the containers
+## 2.3 Start the Containers
 From the created directory, where the `docker-compose.yml` and `.env` files are located (`immich-app` in my case), run the following command to start **Immich** in the background:
 
 ```bash
