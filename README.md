@@ -137,7 +137,26 @@ sudo mount /dev/sdb1 /mnt/immich-storage
 This makes the disk accessible through `/mnt/immich-storage`.
 
 ### 2.1.5 Configure Permanent Mounting
-Add the disk to `/etc/fstab`so Ubuntu automatically mounts it after reboot.
+To prevent the disk from becoming unavailable after future reboots, configure automatic mounting using `/etc/fstab`.
+
+First, retrieve the disk `UUID`:
+
+```dash
+sudo blkid /dev/sdb1
+```
+![UUID](https://github.com/MikeMilenk/Immich-deployment/blob/1cf84d0e13bf50ce4dccb47583d23de1738b4a61/images/UUID.png)
+
+Then edit `/etc/fstab`:
+```bash
+sudo nano /etc/fstab
+```
+Add: `UUID=YOUR-DISK-UUID /mnt/immich-storage ext4 defaults 0 2`
+
+Replace `YOUR-DISK-UUID` with the `UUID` returned by `blkid`.
+![fstab edit](https://github.com/MikeMilenk/Immich-deployment/blob/1cf84d0e13bf50ce4dccb47583d23de1738b4a61/images/fstab%20edit.png)
+
+Skipping this step may cause Immich to lose access to its storage after a reboot or power outage.
+For more information on what can happen and how to recover Immich, see my [Immich Storage Recovery Guide](https://github.com/MikeMilenk/Immich-Storage-Recovery-After-Power-Outage.git).
 
 ---
 
