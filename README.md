@@ -34,8 +34,8 @@ In short, Immich gives you the convenience of a modern cloud photo service while
     - [2.2.3 Populate the .env file with Custom Values](#223-populate-the-.env-file-with-custom-values)
   - [2.3 Start the Containers](#23-start-the-containers)
 - **[3. Remote Access to Immich](#3-remote-access-to-immich)**
-  - [3.1 Option 1 — Local Network](#31-option-1-—-local-network)
-  - [3.2 Option 2 — Remote Access via VPN](#32-option-2-—-remote-access-via-vpn)
+  - [3.1 Option 1 — Local Network](#31-option-1--local-network)
+  - [3.2 Option 2 — Remote Access via VPN](#32-option-2--remote-access-via-vpn)
 ---
 
 # 0. Prepare Storage for Immich Media
